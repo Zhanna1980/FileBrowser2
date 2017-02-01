@@ -1,0 +1,15 @@
+.element{
+    margin-left: 20px;
+}
+
+ul{
+    list-style-type: none;
+}
+.folder{
+    list-style-image: url('_images/folder_open_16.png');
+}
+
+.file{
+    list-style-image: url('_images/file.png');
+}
+
