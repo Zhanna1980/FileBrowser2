@@ -1,0 +1,22 @@
+{
+  "name": "filebrowser2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zhanna1980/FileBrowser2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zhanna1980/FileBrowser2/issues"
+  },
+  "homepage": "https://github.com/Zhanna1980/FileBrowser2#readme",
+  "dependencies": {
+    "jquery": "^3.1.1"
+  }
+}
