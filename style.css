@@ -1,15 +1,115 @@
-.element{
-    margin-left: 20px;
+html, body {
+    height: 100%;
+    font-size: 2em;
+    margin: 0;
+}
+
+.layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: red;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    height: 100px;
+    min-height: 100px;
+    background-color: blue;
+    text-align: center;
+    line-height: 100px;
+
+}
+
+.navigation{
+    min-width: 50px;
+    width: 25%;
+    padding-left: 15px;
+    border-left: 1px solid black;
+    font-size: 0.5em;
+}
+
+#path{
+    min-width: 150px;
+    width: 75%;
+    padding-left: 15px;
+    border-left: 1px solid black;
+    font-size: 0.5em;
+}
+
+#search{
+    min-width: 100px;
+    width: 100%;
+    padding-right: 15px;
+    border-left: 1px solid black;
+    font-size: 0.5em;
+}
+
+.sub-layout {
+    display: flex;
+    flex-flow: row nowrap;
+    align-content: flex-start;
+    height: 100%;
+    background-color: green;
+}
+
+.side-bar {
+    font-size: 0.5em;
+    background-color: yellow;
+    width: 30%;
+    min-width: 100px;
+    overflow: auto;
+    text-align: center;
+}
+
+#content {
+    background-color: lightblue;
+    width: 70%;
+    min-width: 100px;
+    padding: 0;
 }
 
 ul{
     list-style-type: none;
 }
+
 .folder{
-    list-style-image: url('_images/folder_open_16.png');
+    margin-left: 10px;
+    list-style-image: url('_images/folder.png');
+    text-align: left;
 }
 
-.file{
-    list-style-image: url('_images/file.png');
+a{
+    text-decoration: none;
 }
+
+.contentFolder{
+    background-color: yellow;
+    display: inline-block;
+    margin: 10px;
+    border: 1px solid black;
+}
+
+.contentFile{
+    background-color: azure;
+    display: inline-block;
+    margin: 10px;
+    border: 1px solid black;
+}
+
+li.collapsed ul{
+    display: none;
+}
+
+#fs li::before {
+    content: '[-]';
+    margin-right: 10px;
+}
+
+#fs .collapsed::before {
+    content: '[+]';
+    margin-right: 10px;
+}
+
 
