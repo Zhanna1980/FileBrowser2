@@ -7,11 +7,10 @@
 
 $(document).ready(function () {
     var rootUl = $("#fs");
-    printFS(fsStorage[0], rootUl);
+    showFoldersTree(fsStorage[0], rootUl);
 });
 
-function printFS(element, parentInDOM){
-
+function showFoldersTree(element, parentInDOM){
     if (element.children !== undefined){
         var elementInDom = $("<li data-id="+element.id+"><a href='#'>" + element.name +  "</a></li>");
         elementInDom.appendTo(parentInDOM);
@@ -20,18 +19,18 @@ function printFS(element, parentInDOM){
         ul.appendTo(elementInDom);
 
         elementInDom.off("click");
-        elementInDom.click(toggleExpandCollapse);
+        elementInDom.click(onFolderClick);
         for (var i = 0; i < element.children.length; i++){
-            printFS(element.children[i], ul);
+            showFoldersTree(element.children[i], ul);
         }
     }
 }
 
-function toggleExpandCollapse(event){
+function onFolderClick(event){
     event.stopPropagation();
     $(this).toggleClass("collapsed");
     const elementId = $(this).attr("data-id");
-    printFolderContentById(elementId);
+    showFolderContent(elementId);
 
 }
 
@@ -39,7 +38,7 @@ function toggleExpandCollapse(event){
  * Finds current folder by id and prints it
  * @param folderId - the id of the folder
  * */
-function printFolderContentById(folderId){
+function showFolderContent(folderId){
     var contentDiv  = $("#content");
     contentDiv.empty();
     const folderToPrint = findElementById(folderId);
@@ -55,8 +54,11 @@ function printFolderContentById(folderId){
     }
 }
 
+/**
+ * Sorts by folder/file and alphabetically.
+ * @param folderContent - array of objects which are stored in given folder
+ * */
 function sortFolderContent(folderContent){
-    //sorting by folder/file and alphabetically
     var sortedFolderContent = folderContent.sort(function(a,b){
         return (isFolder(a) == isFolder(b)) ? (a.name > b.name) : (isFolder(a) < isFolder(b)) });
     return sortedFolderContent;
