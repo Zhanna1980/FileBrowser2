@@ -4,6 +4,7 @@
 
 "use strict";
 
+var currentFolderId = 0;
 
 $(document).ready(function () {
     var rootUl = $("#fs");
@@ -17,7 +18,6 @@ function showFoldersTree(element, parentInDOM){
         elementInDom.addClass("folder collapsed");
         var ul = $('<ul></ul>');
         ul.appendTo(elementInDom);
-
         elementInDom.off("click");
         elementInDom.click(onFolderClick);
         for (var i = 0; i < element.children.length; i++){
@@ -26,31 +26,37 @@ function showFoldersTree(element, parentInDOM){
     }
 }
 
+/**
+ * Handles the click on the folder in the explorer
+ * */
 function onFolderClick(event){
     event.stopPropagation();
     $(this).toggleClass("collapsed");
     const elementId = $(this).attr("data-id");
-    showFolderContent(elementId);
-
+    showFolderContentById(elementId);
 }
 
 /**
  * Finds current folder by id and prints it
  * @param folderId - the id of the folder
  * */
-function showFolderContent(folderId){
-    var contentDiv  = $("#content");
-    contentDiv.empty();
+function showFolderContentById(folderId){
     const folderToPrint = findElementById(folderId);
-    var folderContent = sortFolderContent(folderToPrint.children);
+    displayFolderContent(folderToPrint);
+}
+
+function displayFolderContent (folderElement){
+    var contentDiv  = clearAndReturnContentDiv();
+    var folderContent = sortFolderContent(folderElement.children);
     for (var i = 0; i < folderContent.length; i++) {
-        var contentItem = $("<div>" + folderContent[i].name + "</div>")
+        var contentItem = $("<div data-id="+folderContent[i].id+">" + folderContent[i].name + "</div>")
         if (isFolder(folderContent[i])){
             contentItem.addClass("contentFolder");
         }  else {
             contentItem.addClass("contentFile");
         }
         contentDiv.append(contentItem);
+        contentItem.click(onContentItemClick);
     }
 }
 
@@ -62,4 +68,30 @@ function sortFolderContent(folderContent){
     var sortedFolderContent = folderContent.sort(function(a,b){
         return (isFolder(a) == isFolder(b)) ? (a.name > b.name) : (isFolder(a) < isFolder(b)) });
     return sortedFolderContent;
+}
+
+function onContentItemClick(){
+    var elementId = $(this).attr("data-id");
+    var element = findElementById(elementId);
+    if (isFolder(element)){
+        displayFolderContent(element);
+    } else {
+        openFile(element);
+    }
+}
+/**
+ * Displays file content in content side
+ * @param fileElement - object of the file from fsStorage
+ * */
+function openFile(fileElement){
+    var contentDiv = clearAndReturnContentDiv();
+    if (fileElement.content != undefined && fileElement.content != null){
+        contentDiv.text(fileElement.content);
+    }
+}
+
+function clearAndReturnContentDiv(){
+    var contentDiv  = $("#content");
+    contentDiv.empty();
+    return contentDiv;
 }

@@ -18,7 +18,7 @@ var fsStorage = [
     }
 ]
 
-var currentFolderId = 0;
+
 
 /**
  * Checks that the element is a folder

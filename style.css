@@ -67,6 +67,8 @@ html, body {
     width: 70%;
     min-width: 100px;
     padding: 0;
+
+    overflow: auto;
 }
 
 ul{
