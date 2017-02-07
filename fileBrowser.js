@@ -9,31 +9,41 @@ var currentFolderId = 0;
 $(document).ready(function () {
     var rootUl = $("#fs");
     showFoldersTree(fsStorage[0], rootUl);
+    showFolderContentById(0);
 });
 
+/**
+ * Shows fsStorage tree in explorer
+ * */
 function showFoldersTree(element, parentInDOM){
     if (element.children !== undefined){
-        var elementInDom = $("<li data-id="+element.id+"><a href='#'>" + element.name +  "</a></li>");
+        var elementInDom = $("<li><div class='image'/>" + " " +
+            "<a href='#' data-id="+element.id+">" + element.name +  "</a></li>");
         elementInDom.appendTo(parentInDOM);
-        elementInDom.addClass("folder collapsed");
+        hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
         var ul = $('<ul></ul>');
         ul.appendTo(elementInDom);
-        elementInDom.off("click");
-        elementInDom.click(onFolderClick);
+        elementInDom.find("div").click(onFolderIconClick);
+        elementInDom.find("a").click(onFolderNameClick);
         for (var i = 0; i < element.children.length; i++){
             showFoldersTree(element.children[i], ul);
         }
     }
 }
 
-/**
- * Handles the click on the folder in the explorer
- * */
-function onFolderClick(event){
-    event.stopPropagation();
-    $(this).toggleClass("collapsed");
+function onFolderNameClick(){
+    $(this).siblings('div').click();
     const elementId = $(this).attr("data-id");
     showFolderContentById(elementId);
+}
+/**
+ * Handles the click on the folder icon in the explorer
+ * */
+function onFolderIconClick(){
+    const folderId = $(this).siblings('a').attr("data-id");
+    if (hasSubfoldersById(folderId)) {
+        $(this).parent().toggleClass("collapsed");
+    }
 }
 
 /**
@@ -49,11 +59,12 @@ function displayFolderContent (folderElement){
     var contentDiv  = clearAndReturnContentDiv();
     var folderContent = sortFolderContent(folderElement.children);
     for (var i = 0; i < folderContent.length; i++) {
-        var contentItem = $("<div data-id="+folderContent[i].id+">" + folderContent[i].name + "</div>")
+        var contentItem = $("<div data-id="+folderContent[i].id+"><div>" + folderContent[i].name + "</div></div>");
+        contentItem.addClass("contentItem");
         if (isFolder(folderContent[i])){
-            contentItem.addClass("contentFolder");
+            $("<img src='_images/folder.png'/>").prependTo(contentItem);
         }  else {
-            contentItem.addClass("contentFile");
+            $("<img src='_images/file.png'/>").prependTo(contentItem);
         }
         contentDiv.append(contentItem);
         contentItem.click(onContentItemClick);

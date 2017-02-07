@@ -37,14 +37,6 @@ html, body {
     font-size: 0.5em;
 }
 
-#search{
-    min-width: 100px;
-    width: 100%;
-    padding-right: 15px;
-    border-left: 1px solid black;
-    font-size: 0.5em;
-}
-
 .sub-layout {
     display: flex;
     flex-flow: row nowrap;
@@ -58,26 +50,28 @@ html, body {
     background-color: yellow;
     width: 30%;
     min-width: 100px;
+    white-space: nowrap;
     overflow: auto;
     text-align: center;
+    padding: 0;
 }
 
 #content {
     background-color: lightblue;
     width: 70%;
     min-width: 100px;
-    padding: 0;
-
+    white-space: nowrap;
     overflow: auto;
+    font-size: 0.5em;
+    line-height: 30px;
 }
 
 ul{
     list-style-type: none;
+    padding-right: 0;
 }
 
 .folder{
-    margin-left: 10px;
-    list-style-image: url('_images/folder.png');
     text-align: left;
 }
 
@@ -85,32 +79,42 @@ a{
     text-decoration: none;
 }
 
-.contentFolder{
-    background-color: yellow;
+.contentItem{
     display: inline-block;
-    margin: 10px;
-    border: 1px solid black;
+    margin: 15px;
+    text-align: center;
 }
 
-.contentFile{
-    background-color: azure;
-    display: inline-block;
-    margin: 10px;
-    border: 1px solid black;
-}
 
 li.collapsed ul{
     display: none;
 }
 
-#fs li::before {
-    content: '[-]';
-    margin-right: 10px;
+#fs li{
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-#fs .collapsed::before {
-    content: '[+]';
-    margin-right: 10px;
+#fs li>div.image {
+    background-image: url("_images/folder.png");
+    height: 32px;
+    width: 32px;
+    text-align: right;
+}
+
+#fs li>div, a{
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#fs div::before {
+    content: '-';
+    color: blue;
+}
+
+#fs .collapsed div::before {
+    content: '+';
+    color: blue;
 }
 
 

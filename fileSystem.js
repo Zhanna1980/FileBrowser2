@@ -68,3 +68,26 @@ function findElementRecursive(id, element, parent) {
     }
     return {element: null, parent: null};
 }
+
+/**
+ * Checks if given folders has subfolders.
+ * @param folderId - the id of the folder
+ * @return Boolean: true if it has subfolders and false if it has not.
+ * */
+function hasSubfoldersById(folderId) {
+    var folder = findElementById(folderId);
+    return hasSubfolders(folder);
+}
+
+function hasSubfolders(folder) {
+    if (isFolder(folder)){
+        for (var i = 0; i < folder.children.length; i++){
+            if (isFolder(folder.children[i])){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
