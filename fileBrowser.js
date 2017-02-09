@@ -4,6 +4,7 @@
 
 "use strict";
 
+var navigationHistory = [];
 var currentFolderId = 0;
 
 $(document).ready(function () {
@@ -95,10 +96,41 @@ function onContentItemClick(){
  * @param fileElement - object of the file from fsStorage
  * */
 function openFile(fileElement){
-    var contentDiv = clearAndReturnContentDiv();
+    var displayFileTemplate = `<div class="fileDisplay">
+                                    <textarea class="editFile" value="" autofocus/>
+                                    <div class="editFileButtonsLayer">
+                                        <button class="cancel">Cancel</button>
+                                        <button class="ok">OK</button>
+                                    </div>
+                                </div>`;
+    var displayFile = $(displayFileTemplate);
+    var contentDiv  = $("#content");
+    contentDiv.append(displayFile);
+    var displayFileTextArea = displayFile.find(".editFile");
+    var btnCancel = displayFile.find(".cancel");
+    btnCancel.click(closeDisplayFile);
+    var btnOk = displayFile.find(".ok");
+    btnOk.attr("data-id", fileElement.id);
+    btnOk.click(function () {
+        saveChangesInFile.call(this);
+        closeDisplayFile.call(this);
+    });
     if (fileElement.content != undefined && fileElement.content != null){
-        contentDiv.text(fileElement.content);
+        displayFileTextArea.text(fileElement.content);
     }
+}
+
+function saveChangesInFile() {
+    var fileId = $(this).attr("data-id");
+    var editedText = $("textarea.editFile").val();
+    var file = findElementById(fileId);
+    file.content = editedText;
+    // console.log(fileId);
+}
+
+function closeDisplayFile(){
+    var displayFile = $(this).parents(".fileDisplay");
+    displayFile.remove();
 }
 
 function clearAndReturnContentDiv(){
