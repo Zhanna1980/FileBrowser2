@@ -80,9 +80,9 @@ function hasSubfoldersById(folderId) {
 }
 
 function hasSubfolders(folder) {
-    if (isFolder(folder)){
-        for (var i = 0; i < folder.children.length; i++){
-            if (isFolder(folder.children[i])){
+    if (isFolder(folder)) {
+        for (var i = 0; i < folder.children.length; i++) {
+            if (isFolder(folder.children[i])) {
                 return true;
             }
         }
@@ -90,4 +90,61 @@ function hasSubfolders(folder) {
     return false;
 }
 
+/**
+ * Sorts by folder/file and alphabetically.
+ * @param folderContent - array of objects which are stored in given folder
+ * */
+function sortFolderContent(folderContent){
+    var sortedFolderContent = folderContent.sort(function(a,b){
+        return (isFolder(a) == isFolder(b)) ? (a.name > b.name) : (isFolder(a) < isFolder(b)) });
+    return sortedFolderContent;
+}
+
+function findChildByName (childName, parentElement) {
+    if (isFolder(parentElement)){
+        for (var i = 0; i < parentElement.children.length; i++) {
+            if (parentElement.children[i].name === childName) {
+                return parentElement.children[i];
+            }
+        }
+    }
+    return null;
+}
+
+function findItemByPath(path) {
+    var trimmedPath = path.trim();
+    var elementsInPath = trimmedPath.split("/");
+    if (elementsInPath[elementsInPath.length - 1] == "") {
+        elementsInPath.pop();
+    }
+    var currentElement = null;
+    if (elementsInPath.length == 0) {
+        return null;
+    } else if ( elementsInPath[0] == "root") {
+        currentElement = fsStorage[0];
+    } else {
+        return null;
+    }
+    for (var i = 1; i < elementsInPath.length; i++) {
+        currentElement = findChildByName(elementsInPath[i], currentElement);
+        if (currentElement == null){
+            return null;
+        }
+    }
+    return currentElement;
+}
+
+function generatePathByElementId (elementId) {
+    var path = generatePathByElement(findElementById(elementId));
+    // removes starting '/'
+    return path.substr(1);
+}
+
+function generatePathByElement (element) {
+    if(element == null) {
+        return "";
+    }
+    var parent = findParentByElementId(element.id);
+    return generatePathByElement(parent) + "/" + element.name;
+}
 

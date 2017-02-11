@@ -11,6 +11,22 @@ $(document).ready(function () {
     var rootUl = $("#fs");
     showFoldersTree(fsStorage[0], rootUl);
     showFolderContentById(0);
+    displayPath(0);
+    $(window).click(function () { hideContextMenu(); });
+    $("#content").contextmenu(function (event) {
+        showContextMenu(event);
+        return false;
+    });
+    $("#path").on('keydown', function (event) {
+        //if enter was pressed
+        if (event.keyCode == 13) {
+            var path = $(this).val();
+            var element = findItemByPath(path);
+            if (element !== null) {
+                (isFolder(element)) ? displayFolderContent(element) : openFile(element);
+            }
+        }
+    });
 });
 
 /**
@@ -18,18 +34,32 @@ $(document).ready(function () {
  * */
 function showFoldersTree(element, parentInDOM){
     if (element.children !== undefined){
-        var elementInDom = $("<li><div class='image'/>" + " " +
-            "<a href='#' data-id="+element.id+">" + element.name +  "</a></li>");
-        elementInDom.appendTo(parentInDOM);
-        hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
-        var ul = $('<ul></ul>');
-        ul.appendTo(elementInDom);
-        elementInDom.find("div").click(onFolderIconClick);
-        elementInDom.find("a").click(onFolderNameClick);
+        var ul = createFoldersListElement(element, parentInDOM).find("ul");
         for (var i = 0; i < element.children.length; i++){
             showFoldersTree(element.children[i], ul);
         }
     }
+}
+
+/**Creates single "li" object and attaches it to a parent ul.
+ * @param element - element in fsStorage.
+ * @param parentInDOM - parent "ul" to which the newly created "li" is attached
+ * @return the newly created "li".
+ * */
+function createFoldersListElement(element, parentInDOM) {
+    var elementInDom = $("<li><div class='image'/>" + " " +
+        "<a href='#' data-id="+element.id+">" + element.name +  "</a></li>");
+    elementInDom.appendTo(parentInDOM);
+    hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
+    var ul = $('<ul></ul>');
+    ul.appendTo(elementInDom);
+    elementInDom.find("div").click(onFolderIconClick);
+    elementInDom.find("a").click(onFolderNameClick);
+    elementInDom.contextmenu(function (event) {
+        showContextMenu(event);
+        return false;
+    });
+    return elementInDom;
 }
 
 function onFolderNameClick(){
@@ -54,6 +84,7 @@ function onFolderIconClick(){
 function showFolderContentById(folderId){
     const folderToPrint = findElementById(folderId);
     displayFolderContent(folderToPrint);
+    displayPath(folderId);
 }
 
 function displayFolderContent (folderElement){
@@ -62,24 +93,20 @@ function displayFolderContent (folderElement){
     for (var i = 0; i < folderContent.length; i++) {
         var contentItem = $("<div data-id="+folderContent[i].id+"><div>" + folderContent[i].name + "</div></div>");
         contentItem.addClass("contentItem");
+        contentItem.contextmenu(function (event) {
+            showContextMenu(event);
+            return false;
+        });
         if (isFolder(folderContent[i])){
+            contentItem.attr("data-type", "folder");
             $("<img src='_images/folder.png'/>").prependTo(contentItem);
         }  else {
+            contentItem.attr("data-type", "file");
             $("<img src='_images/file.png'/>").prependTo(contentItem);
         }
         contentDiv.append(contentItem);
         contentItem.click(onContentItemClick);
     }
-}
-
-/**
- * Sorts by folder/file and alphabetically.
- * @param folderContent - array of objects which are stored in given folder
- * */
-function sortFolderContent(folderContent){
-    var sortedFolderContent = folderContent.sort(function(a,b){
-        return (isFolder(a) == isFolder(b)) ? (a.name > b.name) : (isFolder(a) < isFolder(b)) });
-    return sortedFolderContent;
 }
 
 function onContentItemClick(){
@@ -90,6 +117,7 @@ function onContentItemClick(){
     } else {
         openFile(element);
     }
+    displayPath(elementId);
 }
 /**
  * Displays file content in content side
@@ -100,7 +128,7 @@ function openFile(fileElement){
                                     <textarea class="editFile" value="" autofocus/>
                                     <div class="editFileButtonsLayer">
                                         <button class="cancel">Cancel</button>
-                                        <button class="ok">OK</button>
+                                        <button class="save">Save</button>
                                     </div>
                                 </div>`;
     var displayFile = $(displayFileTemplate);
@@ -109,9 +137,9 @@ function openFile(fileElement){
     var displayFileTextArea = displayFile.find(".editFile");
     var btnCancel = displayFile.find(".cancel");
     btnCancel.click(closeDisplayFile);
-    var btnOk = displayFile.find(".ok");
-    btnOk.attr("data-id", fileElement.id);
-    btnOk.click(function () {
+    var btnSave = displayFile.find(".save");
+    btnSave.attr("data-id", fileElement.id);
+    btnSave.click(function () {
         saveChangesInFile.call(this);
         closeDisplayFile.call(this);
     });
@@ -125,7 +153,6 @@ function saveChangesInFile() {
     var editedText = $("textarea.editFile").val();
     var file = findElementById(fileId);
     file.content = editedText;
-    // console.log(fileId);
 }
 
 function closeDisplayFile(){
@@ -138,3 +165,63 @@ function clearAndReturnContentDiv(){
     contentDiv.empty();
     return contentDiv;
 }
+
+function showContextMenu(event){
+    var menu = $(".menu");
+    menu.empty();
+    var target = $(event.currentTarget);
+    var newFolder = $("<div class='menuItem'>New folder</div>");
+    var newFile = $("<div class='menuItem'>New file</div>");
+    var deleteFileOrFolder = $("<div class='menuItem'>Delete</div>");
+    var rename = $("<div class='menuItem'>Rename</div>");
+    rename.click(renameItem);
+    var id;
+    if (target.is("li")){
+        id = target.children('a').attr('data-id');
+        menu.append(newFolder);
+        menu.append(deleteFileOrFolder);
+        menu.append(rename);
+
+    } else if (target.is("#content")){
+        if ($(".fileDisplay").length !== 0){
+            menu.empty();
+            return;
+        }
+        menu.append(newFolder);
+        menu.append(newFile);
+
+    } else if (target.is(".contentItem")){
+        id = target.attr('data-id');
+        var type = $(target).attr("data-type");
+        if (type == "folder"){
+            menu.append(newFolder);
+        }
+        menu.append(deleteFileOrFolder);
+        menu.append(rename);
+    }
+    menu.css('display', 'block');
+    menu.css('left', event.pageX + 'px');
+    menu.css('top', event.pageY + 'px');
+    menu.attr("data-id", id);
+}
+
+function hideContextMenu() {
+    var menu = $('.menu');
+    menu.empty();
+    menu.css('display', 'none');
+}
+
+function renameItem(){
+    var id = $(this).parent().attr("data-id");
+    var item = findElementById(id);
+    var editedItemName = prompt("Please enter the  new name", item.name);
+    item.name = editedItemName;
+}
+
+function  displayPath(elementId) {
+    var path = generatePathByElementId(elementId);
+    var inputPath = $("#path");
+    inputPath.val(path);
+}
+
+
