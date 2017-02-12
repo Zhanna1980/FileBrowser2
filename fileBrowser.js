@@ -1,18 +1,16 @@
 /**
  * Created by zhannalibman on 31/01/2017.
  */
+(function ($) {
 
 "use strict";
-
+//the array that keeps the ids of opened folders and files
 var navigationHistory = [];
-var currentFolderId = 0;
+var navigationHistoryCurrentElementIndex = -1;
 
 $(document).ready(function () {
-    var rootUl = $("#fs");
-    showFoldersTree(fsStorage[0], rootUl);
-    showFolderContentById(0);
-    displayPath(0);
-    $(window).click(function () { hideContextMenu(); });
+    initialDisplay();
+    $(window).click(hideContextMenu);
     $("#content").contextmenu(function (event) {
         showContextMenu(event);
         return false;
@@ -22,12 +20,60 @@ $(document).ready(function () {
         if (event.keyCode == 13) {
             var path = $(this).val();
             var element = findItemByPath(path);
-            if (element !== null) {
-                (isFolder(element)) ? displayFolderContent(element) : openFile(element);
+            if(element != null) {
+                showFolderOrFileContentById(element.id);
             }
         }
     });
+    $("#btnBack").click(back);
+    $("#btnForward").click(forward);
 });
+
+function initialDisplay() {
+    var rootUl = $("#fs");
+    showFoldersTree(fsStorage[0], rootUl);
+    showFolderOrFileContentById(0);
+}
+
+function back() {
+    if (navigationHistoryCurrentElementIndex > 0){
+        if(!showFolderOrFileContentById(navigationHistory[--navigationHistoryCurrentElementIndex], true))
+        {
+            alert("Folder/file you want to open doesn't exist." +
+                " The previous folder/file (if it exists) will be opened.");
+            back();
+        }
+    }
+}
+
+function forward() {
+    if (navigationHistoryCurrentElementIndex >= navigationHistory.length - 1) {
+        return;
+    }
+
+    if(!showFolderOrFileContentById(navigationHistory[++navigationHistoryCurrentElementIndex], true))
+    {
+        alert("Folder/file you want to open doesn't exist." +
+            " The previous folder/file (if it exists) will be opened.");
+        forward();
+    }
+
+}
+
+/**
+ * Updates the history array and currentElementId
+ * */
+function updateHistory(elementId) {
+    if(navigationHistoryCurrentElementIndex != -1 && navigationHistory[navigationHistoryCurrentElementIndex] == elementId) {
+        return;
+    }
+    navigationHistory.splice(++navigationHistoryCurrentElementIndex, 0, elementId);
+    navigationHistory.splice(navigationHistoryCurrentElementIndex+1);
+    for (var i = 0; i < navigationHistory.length; i++){
+        console.log(navigationHistory[i]);
+    }
+    console.log("currElInd =", navigationHistoryCurrentElementIndex);
+}
 
 /**
  * Shows fsStorage tree in explorer
@@ -63,10 +109,14 @@ function createFoldersListElement(element, parentInDOM) {
 }
 
 function onFolderNameClick(){
-    $(this).siblings('div').click();
+    var clickedLink = $(this);
+    if (clickedLink.closest("li").hasClass("collapsed")) {
+        clickedLink.siblings('div').click();
+    }
     const elementId = $(this).attr("data-id");
-    showFolderContentById(elementId);
+    showFolderOrFileContentById(elementId);
 }
+
 /**
  * Handles the click on the folder icon in the explorer
  * */
@@ -77,21 +127,11 @@ function onFolderIconClick(){
     }
 }
 
-/**
- * Finds current folder by id and prints it
- * @param folderId - the id of the folder
- * */
-function showFolderContentById(folderId){
-    const folderToPrint = findElementById(folderId);
-    displayFolderContent(folderToPrint);
-    displayPath(folderId);
-}
-
 function displayFolderContent (folderElement){
     var contentDiv  = clearAndReturnContentDiv();
     var folderContent = sortFolderContent(folderElement.children);
     for (var i = 0; i < folderContent.length; i++) {
-        var contentItem = $("<div data-id="+folderContent[i].id+"><div>" + folderContent[i].name + "</div></div>");
+        var contentItem = $("<div data-id='"+folderContent[i].id+"'><div>" + folderContent[i].name + "</div></div>");
         contentItem.addClass("contentItem");
         contentItem.contextmenu(function (event) {
             showContextMenu(event);
@@ -111,13 +151,7 @@ function displayFolderContent (folderElement){
 
 function onContentItemClick(){
     var elementId = $(this).attr("data-id");
-    var element = findElementById(elementId);
-    if (isFolder(element)){
-        displayFolderContent(element);
-    } else {
-        openFile(element);
-    }
-    displayPath(elementId);
+    showFolderOrFileContentById(elementId);
 }
 /**
  * Displays file content in content side
@@ -135,13 +169,12 @@ function openFile(fileElement){
     var contentDiv  = $("#content");
     contentDiv.append(displayFile);
     var displayFileTextArea = displayFile.find(".editFile");
-    var btnCancel = displayFile.find(".cancel");
-    btnCancel.click(closeDisplayFile);
-    var btnSave = displayFile.find(".save");
-    btnSave.attr("data-id", fileElement.id);
-    btnSave.click(function () {
-        saveChangesInFile.call(this);
-        closeDisplayFile.call(this);
+    displayFile.find(".cancel").click(closeDisplayFile);
+    displayFile.find(".save")
+        .attr("data-id", fileElement.id)
+        .click(function () {
+            saveChangesInFile.call(this);
+            closeDisplayFile.call(this);
     });
     if (fileElement.content != undefined && fileElement.content != null){
         displayFileTextArea.text(fileElement.content);
@@ -153,11 +186,15 @@ function saveChangesInFile() {
     var editedText = $("textarea.editFile").val();
     var file = findElementById(fileId);
     file.content = editedText;
+    // updateHistory(navigationHistory[navigationHistory.length - 2]);
+    // displayPath(navigationHistory[navigationHistory.length - 2]);
 }
 
 function closeDisplayFile(){
     var displayFile = $(this).parents(".fileDisplay");
     displayFile.remove();
+    // updateHistory(navigationHistory[navigationHistory.length - 2]);
+    // displayPath(navigationHistory[navigationHistory.length - 2]);
 }
 
 function clearAndReturnContentDiv(){
@@ -223,5 +260,27 @@ function  displayPath(elementId) {
     var inputPath = $("#path");
     inputPath.val(path);
 }
+
+function showFolderOrFileContentById(elementId, skipHistory) {
+    var element = findElementById(elementId);
+    if(element == null) {
+        return false;
+    }
+
+    if (isFolder(element)){
+        displayFolderContent(element);
+    } else {
+        openFile(element);
+    }
+
+    if(!skipHistory) {
+        updateHistory(elementId);
+    }
+
+    displayPath(elementId);
+    return true;
+}
+
+})(jQuery);
 
 

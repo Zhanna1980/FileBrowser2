@@ -16,7 +16,7 @@ var fsStorage = [
         { id: 3, name: "file1.txt", content: "text"}
     ]
     }
-]
+];
 
 
 
@@ -26,7 +26,7 @@ var fsStorage = [
  * @return true if the element is a folder and false if it is a file
  * */
 function isFolder (element){
-    return element.children;
+    return element.children !== undefined;
 }
 
 /**
@@ -118,9 +118,7 @@ function findItemByPath(path) {
         elementsInPath.pop();
     }
     var currentElement = null;
-    if (elementsInPath.length == 0) {
-        return null;
-    } else if ( elementsInPath[0] == "root") {
+    if ( elementsInPath.length > 0 && elementsInPath[0] == "root") {
         currentElement = fsStorage[0];
     } else {
         return null;
