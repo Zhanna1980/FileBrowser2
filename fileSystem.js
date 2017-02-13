@@ -18,8 +18,6 @@ var fsStorage = [
     }
 ];
 
-
-
 /**
  * Checks that the element is a folder
  * @param element - object in fsStorage

@@ -39,6 +39,7 @@ html, body {
     border: none;
     font-size: 1em;
     font-weight: 300;
+    cursor: pointer;
 }
 
 .navigation>button:active{
