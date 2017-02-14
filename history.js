@@ -4,10 +4,15 @@
 
 var navigationHistory = (function() {
     "use strict";
+
     //the array that keeps the ids of opened folders and files
     var history = [];
     var currentElementIndex = -1;
 
+    /**
+     * Gets current element's id.
+     * @return current element's id or undefined if the history is empty.
+     * */
     function getCurrent() {
         if (currentElementIndex > -1 && currentElementIndex < history.length) {
             return history[currentElementIndex];
@@ -16,15 +21,27 @@ var navigationHistory = (function() {
         }
     }
 
+    function hasBack() {
+        return currentElementIndex > 0;
+    }
+
+    function hasForward() {
+        return currentElementIndex < history.length - 1;
+    }
+
+    /**
+     * */
     function back() {
-        if (currentElementIndex > 0) {
+        if (hasBack()) {
             --currentElementIndex;
         }
         return getCurrent();
     }
 
+    /**
+     * */
     function forward() {
-        if (currentElementIndex < history.length - 1) {
+        if (hasForward()) {
             ++currentElementIndex;
         }
         return getCurrent();
@@ -51,6 +68,8 @@ var navigationHistory = (function() {
         back: back,
         forward: forward,
         push: push,
-        log: log
+        log: log,
+        hasBack: hasBack,
+        hasForward: hasForward
     };
 })();

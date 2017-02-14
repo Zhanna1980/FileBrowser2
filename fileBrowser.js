@@ -34,7 +34,7 @@ function initialDisplay() {
 }
 
 function back() {
-    if (navigationHistory.getCurrentId() == undefined){
+    if (!navigationHistory.hasBack()){
         return;
     }
     if (!showFolderOrFileContentById(navigationHistory.back(), true)) {
@@ -46,7 +46,7 @@ function back() {
 }
 
 function forward() {
-    if (navigationHistory.getCurrentId() == undefined) {
+    if (!navigationHistory.hasForward()) {
         return;
     }
     if (!showFolderOrFileContentById(navigationHistory.forward(), true)) {
@@ -193,57 +193,63 @@ function clearAndReturnContentDiv(){
 }
 
 function showContextMenu(event){
+    var menuData = getMenuDataForTarget($(event.currentTarget));
     var menu = $(".menu");
     menu.empty();
-    var target = $(event.currentTarget);
+    for(var i=0;i<menuData.menuEntries.length;i++){
+        menu.append(menuData.menuEntries[i]);
+    }
+    menu.css('left', event.pageX + 'px');
+    menu.css('top', event.pageY + 'px');
+    menu.attr("data-id", menuData.id).show();
+}
+
+function getMenuDataForTarget(target) {
     var newFolder = $("<div class='menuItem'>New folder</div>").click(createNewFolder);
     var newFile = $("<div class='menuItem'>New file</div>").click(createNewFile);
     var deleteFileOrFolder = $("<div class='menuItem'>Delete</div>").click(deleteElement);
     var rename = $("<div class='menuItem'>Rename</div>").click(renameItem);
+    var menuEntries = [];
     var id;
     if (target.is("li")){
         id = target.children('a').attr('data-id');
-        menu.attr("data-id", id)
-            .append(newFolder)
-            .append(rename);
+        menuEntries = [newFolder, rename];
         if (id > 0){
-            menu.append(deleteFileOrFolder);
+            menuEntries.push(deleteFileOrFolder);
         }
     } else if (target.is("#content")){
+        // no right click in content when file is opened
         if ($(".fileDisplay").length !== 0){
-            menu.empty();
             return;
         }
-        menu.attr("data-id", navigationHistory.getCurrentId())
-            .append(newFolder)
-            .append(newFile);
+        id = navigationHistory.getCurrentId();
+        menuEntries = [newFolder, newFile];
     } else if (target.is(".contentItem")){
         id = target.attr('data-id');
         var type = $(target).attr("data-type");
         if (type == "folder"){
-            menu.append(newFolder);
-            menu.append(newFile);
+            menuEntries = [newFolder, newFile];
         }
-        menu.attr("data-id", id)
-            .append(deleteFileOrFolder)
-            .append(rename);
+        menuEntries.push(deleteFileOrFolder);
+        menuEntries.push(rename);
     }
-    menu.css('display', 'block');
-    menu.css('left', event.pageX + 'px');
-    menu.css('top', event.pageY + 'px');
-    menu.attr("data-id", id);
-}
 
+    return {
+        menuEntries: menuEntries,
+        id: id
+    }
+}
 function hideContextMenu() {
-    var menu = $('.menu');
-    menu.empty();
-    menu.css('display', 'none');
+    $('.menu').hide();
 }
 
 function renameItem(){
     var id = $(this).parent().attr("data-id");
     var item = fileSystem.findElementById(id);
     var editedItemName = prompt("Please enter the  new name", item.name);
+    if(editedItemName == undefined){
+        return;
+    }
     try {
         fileSystem.renameElement(id, editedItemName);
     } catch (err) {
@@ -279,10 +285,6 @@ function createNewFolder(id){
 
 function updateUI(elementId) {
 
-    // var element = findItemByPath(path);
-    // if(element != null) {
-    //     showFolderOrFileContentById(element.id);
-    // }
 
 }
 

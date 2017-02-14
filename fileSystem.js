@@ -120,7 +120,13 @@ var fileSystem = (function () {
      * */
     function sortFolderContent(folderContent) {
         var sortedFolderContent = folderContent.sort(function (a, b) {
-            return (isFolder(a) == isFolder(b)) ? (a.name > b.name) : (isFolder(a) < isFolder(b))
+            //if both file or folder
+            if(isFolder(a) == isFolder(b))
+            {
+                return (a.name).localeCompare(b.name);
+            }
+
+            return isFolder(a) ? -1 : 1;
         });
         return sortedFolderContent;
     }
@@ -169,6 +175,7 @@ var fileSystem = (function () {
     }
 
     /**
+     * Generates path by element id
      * */
     function generatePathByElementId(elementId) {
         var path = generatePathByElement(findElementById(elementId));
@@ -177,6 +184,7 @@ var fileSystem = (function () {
     }
 
     /**
+     * Generates path by element. Implementaiton detail of generatePathByElementId. Do not call directly.
      * */
     function generatePathByElement(element) {
         if (element == null) {
@@ -226,19 +234,17 @@ var fileSystem = (function () {
     }
 
     /**
+     * Find unique name for file/folder
      * */
-    function getNameMatchCounter(elementName, parent) {
+    function getUniqueName(elementName, parent) {
         var counter = 0;
-        var found = true;
-        while (found) {
-            var searchName = counter > 0 ? (elementName + "(" + counter + ")") : elementName;
-            if (findChildByName(searchName, parent) == null) {
-                found = false;
-                return counter;
-            } else {
-                found = true;
-                counter++;
+        var elementNameExists = true;
+        while (elementNameExists) {
+            var possibleName = counter > 0 ? (elementName + "(" + counter + ")") : elementName;
+            if (findChildByName(possibleName, parent) == null) {
+                return possibleName;
             }
+            counter++;
         }
     }
 
@@ -249,10 +255,9 @@ var fileSystem = (function () {
      * */
     function createFileOrFolder(parentId, type) {
         var parent = findElementById(parentId);
-        var newElementName = type == "folder" ? "new folder" : "new_file.txt";
-        var nameMatchCounter = getNameMatchCounter(newElementName, parent);
-        var nameForAdding = nameMatchCounter == 0 ? newElementName : (newElementName + "(" + nameMatchCounter + ")");
-        var newElement = {id: ++lastAddedId, name: nameForAdding};
+        var newElementName = type == "folder" ? "new folder" : "new file.txt";
+        var newName = getUniqueName(newElementName, parent);
+        var newElement = {id: ++lastAddedId, name: newName};
         if (type == "file") {
             newElement.content = "";
         } else {
