@@ -5,9 +5,6 @@
 
 "use strict";
 
-// var navigationHistory = [];
-// var navigationHistoryCurrentElementIndex = -1;
-
 $(document).ready(function () {
     initialDisplay();
     $('.layout').contextmenu(function () { return false; });
@@ -20,7 +17,7 @@ $(document).ready(function () {
         //if enter was pressed
         if (event.keyCode == 13) {
             var path = $(this).val();
-            var element = findItemByPath(path);
+            var element = fileSystem.findItemByPath(path);
             if(element != null) {
                 showFolderOrFileContentById(element.id);
             }
@@ -32,8 +29,8 @@ $(document).ready(function () {
 
 function initialDisplay() {
     var rootUl = $("#fs");
-    showFoldersTree(fsStorage[0], rootUl);
-    showFolderOrFileContentById(0);
+    showFoldersTree(fileSystem.getRoot(), rootUl);
+    showFolderOrFileContentById(fileSystem.getRoot().id);
 }
 
 function back() {
@@ -64,7 +61,7 @@ function forward() {
  * Shows fsStorage tree in explorer
  * */
 function showFoldersTree(element, parentInDOM){
-    if (element.children !== undefined){
+    if (fileSystem.isFolder(element)){
         var ul = createFoldersListElement(element, parentInDOM).find("ul");
         for (var i = 0; i < element.children.length; i++){
             showFoldersTree(element.children[i], ul);
@@ -81,7 +78,7 @@ function createFoldersListElement(element, parentInDOM) {
     var elementInDom = $("<li><div class='image'/>" + " " +
         "<a href='#' data-id="+element.id+">" + element.name +  "</a></li>");
     elementInDom.appendTo(parentInDOM);
-    hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
+    fileSystem.hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
     var ul = $('<ul></ul>');
     ul.appendTo(elementInDom);
     elementInDom.find("div").click(onFolderIconClick);
@@ -100,7 +97,6 @@ function onFolderNameClick(){
     }
     const elementId = $(this).attr("data-id");
     showFolderOrFileContentById(elementId);
-    // processElementId(elementId);
 }
 
 /**
@@ -108,14 +104,14 @@ function onFolderNameClick(){
  * */
 function onFolderIconClick(){
     const folderId = $(this).siblings('a').attr("data-id");
-    if (hasSubfoldersById(folderId)) {
+    if (fileSystem.hasSubfoldersById(folderId)) {
         $(this).parent().toggleClass("collapsed");
     }
 }
 
 function displayFolderContent (folderElement){
     var contentDiv  = clearAndReturnContentDiv();
-    var folderContent = sortFolderContent(folderElement.children);
+    var folderContent = fileSystem.sortFolderContent(folderElement.children);
     for (var i = 0; i < folderContent.length; i++) {
         var contentItem = $("<div data-id='"+folderContent[i].id+"'><div>" + folderContent[i].name + "</div></div>");
         contentItem.addClass("contentItem");
@@ -123,7 +119,7 @@ function displayFolderContent (folderElement){
             showContextMenu(event);
             return false;
         });
-        if (isFolder(folderContent[i])){
+        if (fileSystem.isFolder(folderContent[i])){
             contentItem.attr("data-type", "folder");
             $("<img src='_images/folder.png'/>").prependTo(contentItem);
         }  else {
@@ -138,8 +134,8 @@ function displayFolderContent (folderElement){
 function onContentItemClick(){
     var elementId = $(this).attr("data-id");
     showFolderOrFileContentById(elementId);
-    // processElementId(elementId);
 }
+
 /**
  * Displays file content in content side
  * @param fileElement - object of the file from fsStorage
@@ -173,19 +169,18 @@ function openFile(fileElement){
 function saveChangesInFile() {
     var fileId = $(this).attr("data-id");
     var editedText = $("textarea.editFile").val();
-    var fileAndParent = findElementRecursive(fileId, fsStorage[0], null);
+    var fileAndParent = fileSystem.findElementRecursive(fileId, fileSystem.getRoot(), null);
     var file = fileAndParent.element;
     file.content = editedText;
     var parent = fileAndParent.parent;
     if (parent != null) {
         showFolderOrFileContentById(parent.id);
-        // processElementId(parent.id);
     }
 }
 
 function closeDisplayFile(){
     var fileId = $(this).attr("data-id");
-    var parent = findParentByElementId(fileId);
+    var parent = fileSystem.findParentByElementId(fileId);
     if (parent != null) {
         showFolderOrFileContentById(parent.id);
     }
@@ -247,14 +242,14 @@ function hideContextMenu() {
 
 function renameItem(){
     var id = $(this).parent().attr("data-id");
-    var item = findElementById(id);
+    var item = fileSystem.findElementById(id);
     var editedItemName = prompt("Please enter the  new name", item.name);
     try {
-        renameElement(id, editedItemName);
+        fileSystem.renameElement(id, editedItemName);
     } catch (err) {
         alert(err.message);
     }
-    updateUI();
+    updateUI(id);
 }
 
 function deleteElement(){
@@ -265,27 +260,34 @@ function deleteElement(){
     }
     var userConfirmed = confirm("Are you sure?");
     if (userConfirmed) {
-        deleteElementFromFileSystem(id);
-        updateUI();
+        fileSystem.deleteElement(id);
+        updateUI(id);
     }
 }
 
-function createNewFile(){
+function createNewFile(id){
     var id = $(this).parent().attr("data-id");
-    createFileOrFolder(id, "file");
+    fileSystem.createFileOrFolder(id, "file");
+    updateUI(id);
 }
 
-function createNewFolder(){
+function createNewFolder(id){
     var id = $(this).parent().attr("data-id");
-    createFileOrFolder(id, "folder");
+    fileSystem.createFileOrFolder(id, "folder");
+    updateUI(id);
 }
 
-function updateUI(){
+function updateUI(elementId) {
+
+    // var element = findItemByPath(path);
+    // if(element != null) {
+    //     showFolderOrFileContentById(element.id);
+    // }
 
 }
 
 function  displayPath(elementId) {
-    var path = generatePathByElementId(elementId);
+    var path = fileSystem.generatePathByElementId(elementId);
     var inputPath = $("#path");
     inputPath.val(path);
 }
@@ -294,11 +296,11 @@ function showFolderOrFileContentById(elementId, skipHistory) {
     if (!skipHistory && navigationHistory.getCurrentId() == elementId) {
         return true;
     }
-    var element = findElementById(elementId);
+    var element = fileSystem.findElementById(elementId);
     if(element == null) {
         return false;
     }
-    if (isFolder(element)){
+    if (fileSystem.isFolder(element)){
         displayFolderContent(element);
     } else {
         openFile(element);

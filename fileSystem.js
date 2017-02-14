@@ -1,6 +1,9 @@
 /**
  * Created by zhannalibman on 05/02/2017.
  */
+
+var fileSystem = (function() {
+
 "use strict";
 
 var fsStorage = [
@@ -146,7 +149,7 @@ function generatePathByElement (element) {
     return generatePathByElement(parent) + "/" + element.name;
 }
 
-function deleteElementFromFileSystem (elementId) {
+function deleteElement (elementId) {
     var parent = findParentByElementId(elementId);
     if (parent == null) {
         return;
@@ -179,7 +182,7 @@ function renameElement(elementId, newName) {
 
 }
 
-function getNameMatchCounter (elementName, parent) {
+function getNameMatchCounter(elementName, parent) {
     var counter = 0;
     var found = true;
     while (found) {
@@ -211,3 +214,23 @@ function createFileOrFolder(parentId, type) {
     console.log(parent.children);
 }
 
+function getRoot(){
+    return fsStorage[0];
+}
+
+    return {
+        getRoot : getRoot,
+        isFolder : isFolder,
+        findElementById : findElementById,
+        findParentByElementId : findParentByElementId,
+        findElementRecursive : findElementRecursive,
+        hasSubfoldersById : hasSubfoldersById,
+        hasSubfolders : hasSubfolders,
+        sortFolderContent : sortFolderContent,
+        findItemByPath : findItemByPath,
+        generatePathByElementId : generatePathByElementId,
+        deleteElement : deleteElement,
+        renameElement : renameElement,
+        createFileOrFolder : createFileOrFolder
+    };
+})();
