@@ -18,10 +18,12 @@ var fsStorage = [
     }
 ];
 
+var lastAddedId = 6;
+
 /**
  * Checks that the element is a folder
  * @param element - object in fsStorage
- * @return true if the element is a folder and false if it is a file
+ * @return Boolean - true if the element is a folder and false if it is a file
  * */
 function isFolder (element){
     return element.children !== undefined;
@@ -142,5 +144,70 @@ function generatePathByElement (element) {
     }
     var parent = findParentByElementId(element.id);
     return generatePathByElement(parent) + "/" + element.name;
+}
+
+function deleteElementFromFileSystem (elementId) {
+    var parent = findParentByElementId(elementId);
+    if (parent == null) {
+        return;
+    }
+    for (var i = 0; i < parent.children.length; i++) {
+        if (parent.children[i].id == elementId) {
+            parent.children.splice(i, 1);
+            console.log(findElementById(elementId));
+            return;
+        }
+    }
+
+}
+
+function renameElement(elementId, newName) {
+    if (newName == undefined || newName.length == 0) {
+        throw new Error ("Invalid element name.")
+    } else if (elementId == 0){
+        fsStorage[0].name = newName;
+        console.log (fsStorage[0].name);
+    } else {
+        var elementAndParent = findElementRecursive(elementId, fsStorage[0], null);
+        if (findChildByName(newName, elementAndParent.parent) == null) {
+            elementAndParent.element.name = newName;
+            console.log (elementAndParent.element.name);
+        } else {
+            throw new Error ("Element with such name already exists.");
+        }
+    }
+
+}
+
+function getNameMatchCounter (elementName, parent) {
+    var counter = 0;
+    var found = true;
+    while (found) {
+        var searchName = counter > 0 ? (elementName + "(" + counter + ")") : elementName;
+        if (findChildByName(searchName, parent) == null) {
+            found = false;
+            return counter;
+        } else {
+            found = true;
+            counter++;
+        }
+    }
+}
+
+/**
+ * */
+function createFileOrFolder(parentId, type) {
+    var parent = findElementById(parentId);
+    var newElementName = type == "folder" ? "new folder" : "new_file.txt";
+    var nameMatchCounter = getNameMatchCounter(newElementName, parent);
+    var nameForAdding = nameMatchCounter == 0 ? newElementName : (newElementName + "(" + nameMatchCounter + ")");
+    var newElement = {id: ++lastAddedId, name: nameForAdding};
+    if (type == "file"){
+        newElement.content = "";
+    } else {
+        newElement.children = [];
+    }
+    parent.children.push(newElement);
+    console.log(parent.children);
 }
 

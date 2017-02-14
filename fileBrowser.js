@@ -188,7 +188,6 @@ function closeDisplayFile(){
     var parent = findParentByElementId(fileId);
     if (parent != null) {
         showFolderOrFileContentById(parent.id);
-        // processElementId(parent.id);
     }
 }
 
@@ -201,10 +200,6 @@ function clearAndReturnContentDiv(){
 function showContextMenu(event){
     var menu = $(".menu");
     menu.empty();
-    // menu.off("click");
-    // menu.on("click", "div", function (event) {
-    //     console.log(event.currentTarget.innerHTML);
-    // });
     var target = $(event.currentTarget);
     var newFolder = $("<div class='menuItem'>New folder</div>").click(createNewFolder);
     var newFile = $("<div class='menuItem'>New file</div>").click(createNewFile);
@@ -215,8 +210,10 @@ function showContextMenu(event){
         id = target.children('a').attr('data-id');
         menu.attr("data-id", id)
             .append(newFolder)
-            .append(deleteFileOrFolder)
             .append(rename);
+        if (id > 0){
+            menu.append(deleteFileOrFolder);
+        }
     } else if (target.is("#content")){
         if ($(".fileDisplay").length !== 0){
             menu.empty();
@@ -230,6 +227,7 @@ function showContextMenu(event){
         var type = $(target).attr("data-type");
         if (type == "folder"){
             menu.append(newFolder);
+            menu.append(newFile);
         }
         menu.attr("data-id", id)
             .append(deleteFileOrFolder)
@@ -251,18 +249,38 @@ function renameItem(){
     var id = $(this).parent().attr("data-id");
     var item = findElementById(id);
     var editedItemName = prompt("Please enter the  new name", item.name);
-    item.name = editedItemName;
+    try {
+        renameElement(id, editedItemName);
+    } catch (err) {
+        alert(err.message);
+    }
+    updateUI();
 }
 
 function deleteElement(){
-
+    var id = $(this).parent().attr("data-id");
+    if (id == 0) {
+        alert("Root can not be deleted.");
+        return;
+    }
+    var userConfirmed = confirm("Are you sure?");
+    if (userConfirmed) {
+        deleteElementFromFileSystem(id);
+        updateUI();
+    }
 }
 
 function createNewFile(){
-
+    var id = $(this).parent().attr("data-id");
+    createFileOrFolder(id, "file");
 }
 
 function createNewFolder(){
+    var id = $(this).parent().attr("data-id");
+    createFileOrFolder(id, "folder");
+}
+
+function updateUI(){
 
 }
 

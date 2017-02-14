@@ -80,9 +80,8 @@ html, body {
     background-color: lightblue;
     width: 70%;
     min-width: 100px;
-    white-space: nowrap;
     overflow: auto;
-    font-size: 0.5em;
+    font-size: 0.4em;
     line-height: 30px;
 }
 
@@ -140,8 +139,14 @@ a{
     display: inline-block;
     margin: 15px;
     text-align: center;
+    cursor: pointer;
 }
 
+.contentItem>div{
+    width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+}
 
 li.collapsed ul{
     display: none;
