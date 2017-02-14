@@ -5,11 +5,12 @@
 
 "use strict";
 
-var navigationHistory = [];
-var navigationHistoryCurrentElementIndex = -1;
+// var navigationHistory = [];
+// var navigationHistoryCurrentElementIndex = -1;
 
 $(document).ready(function () {
     initialDisplay();
+    $('.layout').contextmenu(function () { return false; });
     $(window).click(hideContextMenu);
     $("#content").contextmenu(function (event) {
         showContextMenu(event);
@@ -22,7 +23,6 @@ $(document).ready(function () {
             var element = findItemByPath(path);
             if(element != null) {
                 showFolderOrFileContentById(element.id);
-                // processElementId(element.id);
             }
         }
     });
@@ -34,51 +34,30 @@ function initialDisplay() {
     var rootUl = $("#fs");
     showFoldersTree(fsStorage[0], rootUl);
     showFolderOrFileContentById(0);
-    // processElementId(0);
 }
 
 function back() {
-    if (navigationHistoryCurrentElementIndex > 0){
-        if (!showFolderOrFileContentById(navigationHistory[--navigationHistoryCurrentElementIndex], true)) {
-            alert("Folder/file you want to open doesn't exist." +
-                " The previous folder/file (if it exists) will be opened.");
-            back();
-        }
-        for (var i = 0; i < navigationHistory.length; i++){
-            console.log(navigationHistory[i]);
-        }
-        console.log("currElInd =", navigationHistoryCurrentElementIndex);
+    if (navigationHistory.getCurrentId() == undefined){
+        return;
     }
+    if (!showFolderOrFileContentById(navigationHistory.back(), true)) {
+        alert("Folder/file you want to open doesn't exist." +
+            " The previous folder/file (if it exists) will be opened.");
+        back();
+    }
+    navigationHistory.log();
 }
 
 function forward() {
-    if (navigationHistoryCurrentElementIndex >= navigationHistory.length - 1) {
+    if (navigationHistory.getCurrentId() == undefined) {
         return;
     }
-    if (!showFolderOrFileContentById(navigationHistory[++navigationHistoryCurrentElementIndex], true)) {
+    if (!showFolderOrFileContentById(navigationHistory.forward(), true)) {
         alert("Folder/file you want to open doesn't exist." +
             " The next folder/file (if it exists) will be opened.");
         forward();
     }
-    for (var i = 0; i < navigationHistory.length; i++){
-        console.log(navigationHistory[i]);
-    }
-    console.log("currElInd =", navigationHistoryCurrentElementIndex);
-}
-
-/**
- * Updates the history array and currentElementId
- * */
-function updateHistory(elementId) {
-    if(navigationHistoryCurrentElementIndex != -1 && navigationHistory[navigationHistoryCurrentElementIndex] == elementId) {
-        return;
-    }
-    navigationHistory.splice(++navigationHistoryCurrentElementIndex, 0, elementId);
-    navigationHistory.splice(navigationHistoryCurrentElementIndex+1);
-    for (var i = 0; i < navigationHistory.length; i++){
-        console.log(navigationHistory[i]);
-    }
-    console.log("currElInd =", navigationHistoryCurrentElementIndex);
+    navigationHistory.log();
 }
 
 /**
@@ -222,33 +201,39 @@ function clearAndReturnContentDiv(){
 function showContextMenu(event){
     var menu = $(".menu");
     menu.empty();
+    // menu.off("click");
+    // menu.on("click", "div", function (event) {
+    //     console.log(event.currentTarget.innerHTML);
+    // });
     var target = $(event.currentTarget);
-    var newFolder = $("<div class='menuItem'>New folder</div>");
-    var newFile = $("<div class='menuItem'>New file</div>");
-    var deleteFileOrFolder = $("<div class='menuItem'>Delete</div>");
-    var rename = $("<div class='menuItem'>Rename</div>");
-    rename.click(renameItem);
+    var newFolder = $("<div class='menuItem'>New folder</div>").click(createNewFolder);
+    var newFile = $("<div class='menuItem'>New file</div>").click(createNewFile);
+    var deleteFileOrFolder = $("<div class='menuItem'>Delete</div>").click(deleteElement);
+    var rename = $("<div class='menuItem'>Rename</div>").click(renameItem);
     var id;
     if (target.is("li")){
         id = target.children('a').attr('data-id');
-        menu.append(newFolder);
-        menu.append(deleteFileOrFolder);
-        menu.append(rename);
+        menu.attr("data-id", id)
+            .append(newFolder)
+            .append(deleteFileOrFolder)
+            .append(rename);
     } else if (target.is("#content")){
         if ($(".fileDisplay").length !== 0){
             menu.empty();
             return;
         }
-        menu.append(newFolder);
-        menu.append(newFile);
+        menu.attr("data-id", navigationHistory.getCurrentId())
+            .append(newFolder)
+            .append(newFile);
     } else if (target.is(".contentItem")){
         id = target.attr('data-id');
         var type = $(target).attr("data-type");
         if (type == "folder"){
             menu.append(newFolder);
         }
-        menu.append(deleteFileOrFolder);
-        menu.append(rename);
+        menu.attr("data-id", id)
+            .append(deleteFileOrFolder)
+            .append(rename);
     }
     menu.css('display', 'block');
     menu.css('left', event.pageX + 'px');
@@ -269,45 +254,26 @@ function renameItem(){
     item.name = editedItemName;
 }
 
+function deleteElement(){
+
+}
+
+function createNewFile(){
+
+}
+
+function createNewFolder(){
+
+}
+
 function  displayPath(elementId) {
     var path = generatePathByElementId(elementId);
     var inputPath = $("#path");
     inputPath.val(path);
 }
 
-// function processElementId(elementId, skipHistory) {
-//     var element = findElementById(elementId);
-//     if(element == null) {
-//         return false;
-//     }
-//     else {
-//         showFolderOrFileContent(element, skipHistory);
-//         return true;
-//     }
-// }
-//
-// function showFolderOrFileContent (element, skipHistory) {
-//     if (!skipHistory &&
-//         navigationHistoryCurrentElementIndex > -1 &&
-//         element.id == navigationHistory[navigationHistoryCurrentElementIndex]) {
-//         return;
-//     }
-//     if (isFolder(element)){
-//         displayFolderContent(element);
-//     } else {
-//         openFile(element);
-//     }
-//     if(!skipHistory) {
-//         updateHistory(element.id);
-//     }
-//     displayPath(element.id);
-// }
-
-
-
 function showFolderOrFileContentById(elementId, skipHistory) {
-    if (!skipHistory && navigationHistoryCurrentElementIndex > -1 &&
-        elementId === navigationHistory[navigationHistoryCurrentElementIndex]) {
+    if (!skipHistory && navigationHistory.getCurrentId() == elementId) {
         return true;
     }
     var element = findElementById(elementId);
@@ -320,7 +286,8 @@ function showFolderOrFileContentById(elementId, skipHistory) {
         openFile(element);
     }
     if(!skipHistory) {
-        updateHistory(elementId);
+        navigationHistory.push(elementId);
+        navigationHistory.log();
     }
     displayPath(elementId);
     return true;
