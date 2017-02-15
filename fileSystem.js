@@ -66,6 +66,15 @@ var fileSystem = (function () {
     }
 
     /**
+     * Finds element and parent element by id of the element
+     * @param elementId - the id of the element.
+     * @return object with element and its parent.
+     * */
+    function findElementAndParentById(elementId) {
+        return findElementRecursive(elementId, fsStorage[0], null);
+    }
+
+    /**
      * Searches recursively for an element in fsStorage
      * @param id - integer which is stored in element.id
      * @param element - object from which the function starts search
@@ -358,7 +367,7 @@ var fileSystem = (function () {
         isFolder: isFolder,
         findElementById: findElementById,
         findParentByElementId: findParentByElementId,
-        findElementRecursive: findElementRecursive,
+        findElementAndParentById: findElementAndParentById,
         hasSubfoldersById: hasSubfoldersById,
         hasSubfolders: hasSubfolders,
         sortFolderContent: sortFolderContent,

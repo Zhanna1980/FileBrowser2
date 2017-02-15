@@ -28,8 +28,7 @@ $(document).ready(function () {
 });
 
 function initialDisplay() {
-    var rootUl = $("#fs");
-    showFoldersTree(fileSystem.getRoot(), rootUl);
+    showFoldersTree();
     showFolderOrFileContentById(fileSystem.getRoot().id);
 }
 
@@ -57,14 +56,21 @@ function forward() {
     navigationHistory.log();
 }
 
+function showFoldersTree(collapsedElements){
+    var rootDomElement = $("#fs");
+    rootDomElement.empty();
+    showFoldersTreeRecursive(fileSystem.getRoot(), rootDomElement, collapsedElements)
+}
+
 /**
  * Shows fsStorage tree in explorer
  * */
-function showFoldersTree(element, parentInDOM){
+function showFoldersTreeRecursive(element, parentInDOM, collapsedElements){
     if (fileSystem.isFolder(element)){
-        var ul = createFoldersListElement(element, parentInDOM).find("ul");
+        var isCollapsed = collapsedElements == undefined || collapsedElements.hasOwnProperty(element.id);
+        var ul = createFoldersListElement(element, parentInDOM, isCollapsed).find("ul");
         for (var i = 0; i < element.children.length; i++){
-            showFoldersTree(element.children[i], ul);
+            showFoldersTreeRecursive(element.children[i], ul, collapsedElements);
         }
     }
 }
@@ -74,11 +80,14 @@ function showFoldersTree(element, parentInDOM){
  * @param parentInDOM - parent "ul" to which the newly created "li" is attached
  * @return the newly created "li".
  * */
-function createFoldersListElement(element, parentInDOM) {
+function createFoldersListElement(element, parentInDOM, isCollapsed) {
     var elementInDom = $("<li><div class='image'/>" + " " +
         "<a href='#' data-id="+element.id+">" + element.name +  "</a></li>");
     elementInDom.appendTo(parentInDOM);
-    fileSystem.hasSubfolders(element) ? elementInDom.addClass("folder collapsed") : elementInDom.addClass("folder");
+    elementInDom.addClass("folder");
+    if(isCollapsed && fileSystem.hasSubfolders(element)){
+        elementInDom.addClass("collapsed");
+    }
     var ul = $('<ul></ul>');
     ul.appendTo(elementInDom);
     elementInDom.find("div").click(onFolderIconClick);
@@ -169,7 +178,7 @@ function openFile(fileElement){
 function saveChangesInFile() {
     var fileId = $(this).attr("data-id");
     var editedText = $("textarea.editFile").val();
-    var fileAndParent = fileSystem.findElementRecursive(fileId, fileSystem.getRoot(), null);
+    var fileAndParent = fileSystem.findElementAndParentById(fileId);
     var file = fileAndParent.element;
     file.content = editedText;
     var parent = fileAndParent.parent;
@@ -255,7 +264,7 @@ function renameItem(){
     } catch (err) {
         alert(err.message);
     }
-    updateUI(id);
+    updateUI();
 }
 
 function deleteElement(){
@@ -267,25 +276,37 @@ function deleteElement(){
     var userConfirmed = confirm("Are you sure?");
     if (userConfirmed) {
         fileSystem.deleteElement(id);
-        updateUI(id);
+        updateUI();
     }
 }
 
 function createNewFile(id){
     var id = $(this).parent().attr("data-id");
     fileSystem.createFileOrFolder(id, "file");
-    updateUI(id);
+    updateUI();
 }
 
 function createNewFolder(id){
     var id = $(this).parent().attr("data-id");
     fileSystem.createFileOrFolder(id, "folder");
-    updateUI(id);
+    updateUI();
 }
 
-function updateUI(elementId) {
+function updateUI() {
+    showFolderOrFileContentById(navigationHistory.getCurrentId(), true);
+    var treeState = getExplorerState();
+    showFoldersTree(treeState);
 
+}
 
+function getExplorerState () {
+    var collapsed = $(".collapsed");
+    var ids = {};
+    collapsed.each(function(){
+        var id = $(this).children('a').attr("data-id");
+        ids[id] = true;
+    });
+    return ids;
 }
 
 function  displayPath(elementId) {
