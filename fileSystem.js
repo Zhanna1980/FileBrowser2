@@ -185,6 +185,8 @@ var fileSystem = (function () {
 
     /**
      * Generates path by element id
+     * @param elementId - the id of the element.
+     * @return String that represents the path.
      * */
     function generatePathByElementId(elementId) {
         var path = generatePathByElement(findElementById(elementId));
@@ -193,7 +195,9 @@ var fileSystem = (function () {
     }
 
     /**
-     * Generates path by element. Implementaiton detail of generatePathByElementId. Do not call directly.
+     * Generates path by element. Implementation detail of generatePathByElementId. Do not call directly.
+     * @param element - object in the fsStorage.
+     * @return String that represents the path (starting with '/').
      * */
     function generatePathByElement(element) {
         if (element == null) {
@@ -243,7 +247,7 @@ var fileSystem = (function () {
     }
 
     /**
-     * Find unique name for file/folder
+     * Find unique name for file/folder. For "inner" use.
      * */
     function getUniqueName(elementName, parent) {
         var counter = 0;

@@ -21,15 +21,22 @@ var navigationHistory = (function() {
         }
     }
 
+    /**
+     * Return true is there is history back from current element
+     * */
     function hasBack() {
         return currentElementIndex > 0;
     }
 
+    /**
+     * Return true is there is history forward from current element
+     */
     function hasForward() {
         return currentElementIndex < history.length - 1;
     }
 
     /**
+     * Moves one entry back in history
      * */
     function back() {
         if (hasBack()) {
@@ -39,6 +46,7 @@ var navigationHistory = (function() {
     }
 
     /**
+     * Moves one entry forward in history
      * */
     function forward() {
         if (hasForward()) {
@@ -47,6 +55,9 @@ var navigationHistory = (function() {
         return getCurrent();
     }
 
+    /**
+     * Add element id to history
+     */
     function push(elementId){
         if(currentElementIndex > -1 && history[currentElementIndex] == elementId) {
             return;
@@ -55,20 +66,11 @@ var navigationHistory = (function() {
         history.splice(currentElementIndex + 1);
     }
 
-    function log (){
-        for (var i = 0; i < history.length; i++){
-            console.log(history[i]);
-        }
-        console.log("currElInd =", currentElementIndex);
-    }
-
-
     return {
         getCurrentId: getCurrent,
         back: back,
         forward: forward,
         push: push,
-        log: log,
         hasBack: hasBack,
         hasForward: hasForward
     };
