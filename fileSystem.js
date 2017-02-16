@@ -231,7 +231,7 @@ var fileSystem = (function () {
      * @param newName - String, the new element name.
      * */
     function renameElement(elementId, newName) {
-        if (newName == undefined || newName.length == 0) {
+        if (newName == undefined || newName.length == 0 || newName.indexOf("/") != -1) {
             throw new Error("Invalid element name.")
         } else if (elementId == 0) {
             fsStorage[0].name = newName;
@@ -247,7 +247,7 @@ var fileSystem = (function () {
     }
 
     /**
-     * Find unique name for file/folder. For "inner" use.
+     * Find unique name for file/folder. For internal use.
      * */
     function getUniqueName(elementName, parent) {
         var counter = 0;

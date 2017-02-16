@@ -41,6 +41,8 @@
                 var element = fileSystem.findItemByPath(path);
                 if (element != null) {
                     showFolderOrFileContentById(element.id);
+                } else {
+                    alert ("Path not found.");
                 }
             }
         });
@@ -58,7 +60,7 @@
         if (!showFolderOrFileContentById(navigationHistory.back(), true)) {
             alert("Folder/file you want to open doesn't exist." +
                 " The previous folder/file (if it exists) will be opened.");
-            navigationHistory.deleteCurrentElementId(true);
+            navigationHistory.deleteCurrentElementId(true/*goesBack*/);
             back();
         }
     }
@@ -73,7 +75,7 @@
         if (!showFolderOrFileContentById(navigationHistory.forward(), true)) {
             alert("Folder/file you want to open doesn't exist." +
                 " The next folder/file (if it exists) will be opened.");
-            navigationHistory.deleteCurrentElementId(false);
+            navigationHistory.deleteCurrentElementId(false/*goesBack*/);
             forward();
         }
     }
