@@ -66,12 +66,24 @@ var navigationHistory = (function() {
         history.splice(currentElementIndex + 1);
     }
 
+    /**
+     * Removes from the history element at current index.
+     * @param goesBack - Boolean which determines how to change the current index after removing.
+     * */
+    function deleteCurrentElementId(goesBack) {
+        history.splice(currentElementIndex, 1);
+        if (!goesBack){
+            currentElementIndex--;
+        }
+    }
+
     return {
         getCurrentId: getCurrent,
         back: back,
         forward: forward,
         push: push,
         hasBack: hasBack,
-        hasForward: hasForward
+        hasForward: hasForward,
+        deleteCurrentElementId: deleteCurrentElementId
     };
 })();

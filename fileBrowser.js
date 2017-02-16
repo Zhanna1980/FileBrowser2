@@ -58,6 +58,7 @@
         if (!showFolderOrFileContentById(navigationHistory.back(), true)) {
             alert("Folder/file you want to open doesn't exist." +
                 " The previous folder/file (if it exists) will be opened.");
+            navigationHistory.deleteCurrentElementId(true);
             back();
         }
     }
@@ -72,6 +73,7 @@
         if (!showFolderOrFileContentById(navigationHistory.forward(), true)) {
             alert("Folder/file you want to open doesn't exist." +
                 " The next folder/file (if it exists) will be opened.");
+            navigationHistory.deleteCurrentElementId(false);
             forward();
         }
     }
@@ -366,7 +368,7 @@
     }
 
     /**
-     * Retruns object that represents current expand/collapse state of explorer tree
+     * Returns object that represents current expand/collapse state of explorer tree
      */
     function getExplorerState() {
         var collapsed = $(".collapsed");
