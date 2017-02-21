@@ -347,6 +347,9 @@
         var userConfirmed = confirm("Are you sure?");
         if (userConfirmed) {
             fileSystem.deleteElement(id);
+            if (id == navigationHistory.getCurrentId()) {
+                navigationHistory.back();
+            }
             updateUI();
         }
     }
