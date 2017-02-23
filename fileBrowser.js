@@ -218,7 +218,7 @@
     }
 
     /**
-     * Handles save buton click in file editing. Saves changes to file content.
+     * Handles save button click in file editing. Saves changes to file content.
      */
     function saveChangesInFile() {
         var fileId = $(this).attr("data-id");
@@ -233,7 +233,7 @@
     }
 
     /**
-     * Handles cancel buton click in file editing. Discards changes to file content.
+     * Handles cancel button click in file editing. Discards changes to file content.
      */
     function closeDisplayFile() {
         var fileId = $(this).attr("data-id");
@@ -376,11 +376,11 @@
      * Returns object that represents current expand/collapse state of explorer tree
      */
     function getExplorerState() {
-        var collapsed = $(".collapsed");
-        if (collapsed.length == 0) {
+        var treeEntries = $("li.folder");
+        if(treeEntries.length == 0){
             return undefined;
         }
-
+        var collapsed = $(".collapsed");
         var ids = {};
         collapsed.each(function () {
             var id = $(this).children('a').attr("data-id");

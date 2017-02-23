@@ -22,14 +22,14 @@ var navigationHistory = (function() {
     }
 
     /**
-     * Return true is there is history back from current element
+     * Return true if there is history back from current element
      * */
     function hasBack() {
         return currentElementIndex > 0;
     }
 
     /**
-     * Return true is there is history forward from current element
+     * Return true if there is history forward from current element
      */
     function hasForward() {
         return currentElementIndex < history.length - 1;
